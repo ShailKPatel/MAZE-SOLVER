@@ -4,17 +4,28 @@ from .models import MazeConfig, MazeState
 
 def generate_maze(config: MazeConfig) -> MazeState:
     # 1. Determine Start/End
-    start_pos = (0, 0)
-    if not config.start_fixed:
-        start_pos = (random.randint(0, config.height - 1), random.randint(0, config.width - 1))
+    # Start: Must be inside (not on boundary)
+    rows, cols = config.height, config.width
     
-    end_pos = (config.height - 1, config.width - 1)
-    if not config.end_fixed:
-        end_pos = (random.randint(0, config.height - 1), random.randint(0, config.width - 1))
+    start_r = random.randint(1, rows - 2)
+    start_c = random.randint(1, cols - 2)
+    start_pos = (start_r, start_c)
+    
+    # End: Must be on boundary
+    # 0=Top, 1=Bottom, 2=Left, 3=Right
+    side = random.randint(0, 3) 
+    if side == 0:   # Top
+        end_pos = (0, random.randint(0, cols - 1))
+    elif side == 1: # Bottom
+        end_pos = (rows - 1, random.randint(0, cols - 1))
+    elif side == 2: # Left
+        end_pos = (random.randint(0, rows - 1), 0)
+    else:           # Right
+        end_pos = (random.randint(0, rows - 1), cols - 1)
         
-    # Ensure start != end
-    while start_pos == end_pos:
-        end_pos = (random.randint(0, config.height - 1), random.randint(0, config.width - 1))
+    # Ensure start != end (Implicitly true as start is inside and end is boundary)
+    # But just in case dimensions are tiny (e.g. 3x3), start is (1,1). End could be (0,1).
+    # They won't overlap.
 
     # 2. Generate Grid
     # Strategy:
@@ -197,6 +208,9 @@ def generate_maze(config: MazeConfig) -> MazeState:
                         # Block middle
                         mb = p2[len(p2)//2]
                         grid[mb[0]][mb[1]] = 1
+                        
+        grid[start_pos[0]][start_pos[1]] = 10
+        grid[end_pos[0]][end_pos[1]] = 11
         return MazeState(width=cols, height=rows, grid=grid, start_pos=start_pos, end_pos=end_pos)
 
     if config.guaranteed_path:
@@ -233,4 +247,6 @@ def generate_maze(config: MazeConfig) -> MazeState:
             
             grid[end_pos[0]][end_pos[1]] = 2
             
+    grid[start_pos[0]][start_pos[1]] = 10
+    grid[end_pos[0]][end_pos[1]] = 11
     return MazeState(width=cols, height=rows, grid=grid, start_pos=start_pos, end_pos=end_pos)

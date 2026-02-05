@@ -37,3 +37,5 @@ class StepUpdate(BaseModel):
     success: bool = False
     path_length: int = 0
     nodes_expanded: int = 0
+    steps_taken: int = 0
+    max_frontier_size: int = 0

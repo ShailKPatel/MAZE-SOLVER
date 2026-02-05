@@ -120,12 +120,14 @@ const COLORS = {
     2: '#ffffff', // Empty
     3: '#facc15', // Exploring (Yellow-400)
     4: '#ef4444', // Dead (Red-500)
-    5: '#22c55e'  // Path (Green-500)
+    5: '#22c55e',  // Path (Green-500)
+    10: '#3b82f6', // Start (Blue)
+    11: '#ef4444'  // End (Red)
 };
 
 // Load Wall Texture
 const wallImg = new Image();
-wallImg.src = 'Minecraft-Bricks.jpg';
+wallImg.src = 'images/Minecraft-Stone-Bricks.jpg';
 let wallImgLoaded = false;
 wallImg.onload = () => {
     wallImgLoaded = true;
@@ -133,7 +135,7 @@ wallImg.onload = () => {
 };
 
 const steveImg = new Image();
-steveImg.src = 'Minecraft-Steve.jpeg';
+steveImg.src = 'images/Minecraft-Steve.jpeg';
 let steveImgLoaded = false;
 steveImg.onload = () => {
     steveImgLoaded = true;
@@ -141,7 +143,7 @@ steveImg.onload = () => {
 };
 
 const chestImg = new Image();
-chestImg.src = 'Minecraft-Chest.jpeg';
+chestImg.src = 'images/Minecraft-Chest.jpeg';
 let chestImgLoaded = false;
 chestImg.onload = () => {
     chestImgLoaded = true;
@@ -152,7 +154,7 @@ chestImg.onload = () => {
 
 
 const grassImg = new Image();
-grassImg.src = 'Minecraft-Grass.png';
+grassImg.src = 'images/Minecraft-Dirt-Path.webp';
 let grassImgLoaded = false;
 grassImg.onload = () => {
     grassImgLoaded = true;
@@ -161,7 +163,7 @@ grassImg.onload = () => {
 
 
 const dirtImg = new Image();
-dirtImg.src = 'Minecraft-Dirt-Path.webp';
+dirtImg.src = 'images/Minecraft-Grass.png';
 let dirtImgLoaded = false;
 dirtImg.onload = () => {
     dirtImgLoaded = true;
@@ -171,7 +173,7 @@ dirtImg.onload = () => {
 
 
 const stoneImg = new Image();
-stoneImg.src = 'Minecraft-Stone-Bricks.jpg';
+stoneImg.src = 'images/Minecraft-Bricks.jpg';
 let stoneImgLoaded = false;
 stoneImg.onload = () => {
     stoneImgLoaded = true;
@@ -181,7 +183,7 @@ stoneImg.onload = () => {
 
 
 const pearlImg = new Image();
-pearlImg.src = 'Minecraft-Ender-Pearl.png';
+pearlImg.src = 'images/Minecraft-Ender-Pearl.png';
 let pearlImgLoaded = false;
 pearlImg.onload = () => {
     pearlImgLoaded = true;
@@ -398,6 +400,10 @@ function drawMaze(updates = null) {
                     ctx.drawImage(dirtImg, x, y, w, h);
                 } else if (val === 5 && stoneImgLoaded) {
                     ctx.drawImage(stoneImg, x, y, w, h);
+                } else if (val === 10 && steveImgLoaded) {
+                    ctx.drawImage(steveImg, x, y, w, h);
+                } else if (val === 11 && chestImgLoaded) {
+                    ctx.drawImage(chestImg, x, y, w, h);
                 } else {
                     ctx.fillStyle = COLORS[val];
                     ctx.fillRect(x, y, w, h);
@@ -444,6 +450,10 @@ function drawMaze(updates = null) {
                 ctx.drawImage(dirtImg, x, y, w, h);
             } else if (val === 5 && stoneImgLoaded) {
                 ctx.drawImage(stoneImg, x, y, w, h);
+            } else if (val === 10 && steveImgLoaded) {
+                ctx.drawImage(steveImg, x, y, w, h);
+            } else if (val === 11 && chestImgLoaded) {
+                ctx.drawImage(chestImg, x, y, w, h);
             } else {
                 ctx.fillStyle = COLORS[val];
                 ctx.fillRect(x, y, w, h);
@@ -479,6 +489,12 @@ async function runAlgorithm() {
                 currentMaze.grid[r][c] = 2; // naive reset
             }
         }
+    }
+
+    // Restore Start/End values
+    if (currentMaze) {
+        currentMaze.grid[currentMaze.start_pos[0]][currentMaze.start_pos[1]] = 10;
+        currentMaze.grid[currentMaze.end_pos[0]][currentMaze.end_pos[1]] = 11;
     }
     // Re-lock walls
     // (Walls are 1, they stay 1)

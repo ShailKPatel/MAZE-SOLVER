@@ -45,13 +45,12 @@ class BatchResult(BaseModel):
     avg_time_ms: float
     avg_nodes: float
     avg_path_length: float
-    # optional: fails_detected_fast?
-
-
+    avg_steps: float
+    avg_frontier: float
 
 @app.post("/api/batch", response_model=List[BatchResult])
 def batch_simulation(config: BatchConfig):
-    results = {algo: {"success": 0, "time": 0.0, "nodes": 0, "path_len": 0, "count": 0} for algo in config.algorithms}
+    results = {algo: {"success": 0, "time": 0.0, "nodes": 0, "path_len": 0, "steps": 0, "frontier": 0, "count": 0} for algo in config.algorithms}
     
     for _ in range(config.num_mazes):
         # Generate one maze for all algos to ensure fair comparison
@@ -65,17 +64,20 @@ def batch_simulation(config: BatchConfig):
             
             # Run solver (non-generator mode would be faster but we reuse logic)
             # We iterate to end
-            steps = list(solver(maze))
+            steps_list = list(solver(maze))
             
             end_time = time.perf_counter()
             duration_ms = (end_time - start_time) * 1000
             
-            last_step = steps[-1]
+            if not steps_list: continue
+            last_step = steps_list[-1]
             
             res = results[algo_name]
             res["count"] += 1
             res["time"] += duration_ms
             res["nodes"] += last_step.nodes_expanded
+            res["steps"] += last_step.steps_taken
+            res["frontier"] += last_step.max_frontier_size
             
             if last_step.success:
                 res["success"] += 1
@@ -92,7 +94,9 @@ def batch_simulation(config: BatchConfig):
             success_rate=data["success"] / count,
             avg_time_ms=data["time"] / count,
             avg_nodes=data["nodes"] / count,
-            avg_path_length=data["path_len"] / data["success"] if data["success"] > 0 else 0
+            avg_path_length=data["path_len"] / data["success"] if data["success"] > 0 else 0,
+            avg_steps=data["steps"] / count,
+            avg_frontier=data["frontier"] / count
         ))
         
     return final_output

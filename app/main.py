@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict
 from pydantic import BaseModel
 import time
-import numpy as np
+
 
 from .models import MazeConfig, MazeState, SolveRequest, StepUpdate
 from .maze_generator import generate_maze

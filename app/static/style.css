@@ -1,0 +1,4 @@
+/* Custom styles for Maze Solver */
+canvas {
+    image-rendering: pixelated; /* Ensures sharp edges for the maze grid */
+}

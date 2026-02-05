@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Solver</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="Minecraft-Steve.jpeg">
+    <style>
+        /* Minecraft Theme Overrides */
+        body {
+            font-family: 'Press Start 2P', cursive !important;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('Minecraft-Stone-Bricks.jpg');
+            background-repeat: repeat;
+            background-size: 128px;
+            color: #eee;
+            font-size: 10px !important;
+            /* Base size reduced */
+        }
+
+        /* UI Containers (Sidebar, Header, Algorithm Panel) */
+        header,
+        aside,
+        .bg-white,
+        #algo-info,
+        #results-panel,
+        #modal-run-all .bg-white {
+            background-color: #C6C6C6 !important;
+            border: 3px solid #000 !important;
+            box-shadow: inset 3px 3px 0px #FFF, inset -3px -3px 0px #555 !important;
+            border-radius: 0 !important;
+            color: #222 !important;
+        }
+
+        /* Buttons (Minecraft GUI Style) */
+        button,
+        input[type="text"] {
+            background-color: #8f8f8f !important;
+            color: #FFF !important;
+            text-shadow: 2px 2px #000;
+            border: 2px solid #000 !important;
+            box-shadow: inset 2px 2px 0px #bfbfbf, inset -2px -2px 0px #555 !important;
+            font-family: 'Press Start 2P', cursive !important;
+            font-size: 12px !important;
+            border-radius: 0 !important;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 8px 12px !important;
+            line-height: 1.5;
+        }
+
+        /* Select Dropdown - Improved Readability */
+        select {
+            background-color: #bfbfbf !important;
+            color: #000 !important;
+            /* Black Text */
+            text-shadow: none !important;
+            /* No Shadow */
+            border: 2px solid #000 !important;
+            font-family: 'Press Start 2P', cursive !important;
+            font-size: 10px !important;
+            border-radius: 0 !important;
+            padding: 8px !important;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #9f9f9f !important;
+        }
+
+        button:active {
+            filter: brightness(0.8);
+            box-shadow: inset 2px 2px 0px #555, inset -2px -2px 0px #bfbfbf !important;
+        }
+
+        /* Text Fixes */
+        h1,
+        h2,
+        h3,
+        h4,
+        a,
+        label,
+        span,
+        p,
+        .text-gray-700,
+        .text-gray-600,
+        .text-gray-800 {
+            font-family: 'Press Start 2P', cursive !important;
+            color: #111 !important;
+            /* Dark text on Grey bg */
+        }
+
+        h1 {
+            font-size: 20px !important;
+            /* Much smaller for this font */
+            text-shadow: 2px 2px #888;
+            line-height: 1.5;
+        }
+
+        h2 {
+            font-size: 14px !important;
+            text-decoration: underline;
+            line-height: 1.5;
+        }
+
+        h3 {
+            font-size: 12px !important;
+        }
+
+        /* Links */
+        a {
+            color: #0000AA !important;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Sliders */
+        input[type=range] {
+            accent-color: #444;
+            height: 16px;
+            /* Taller */
+            border-radius: 0;
+        }
+
+        /* Code Block */
+        pre,
+        code {
+            font-family: 'Courier New', monospace !important;
+            /* Keep code readable */
+            background-color: #222 !important;
+            color: #4ade80 !important;
+            border: 1px solid #FFF;
+            font-size: 12px !important;
+        }
+
+        #algo-info .bg-gray-800 {
+            background-color: #222 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Canvas Container */
+        main .bg-white {
+            background-color: #000 !important;
+            /* Force black behind canvas */
+            border: 4px solid #555 !important;
+            box-shadow: none !important;
+        }
+
+        /* Modal Background */
+        #modal-run-all {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+            border-left: 2px solid #555;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C6C6C6;
+            border: 2px solid #FFF;
+            box-shadow: inset -2px -2px 0px #555;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #dcdcdc;
+        }
+
+        /* Detail Overrides for Modal */
+        #modal-code h2 {
+            color: #FFF !important;
+        }
+
+        #modal-code pre {
+            background-color: #000 !important;
+        }
+
+        #modal-code code {
+            color: #00FF00 !important;
+            background-color: #000 !important;
+            border: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm p-4 flex justify-between items-center z-10">
+        <h1 class="text-xl font-bold text-gray-800 tracking-wide">MAZE SOLVER</h1>
+        <nav class="space-x-4">
+            <a href="/" class="text-blue-600 font-semibold border-b-2 border-blue-600">Interactive Solver</a>
+            <a href="/batch.html" class="text-gray-600 hover:text-blue-600">Batch Analysis</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-96 bg-white shadow-md overflow-y-auto p-6 flex flex-col gap-6 z-0">
+
+            <!-- Grid Config -->
+            <section>
+                <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Grid Configuration</h2>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Width: <span
+                            id="val-width">20</span></label>
+                    <input type="range" id="width" min="10" max="100" value="20"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Height: <span
+                            id="val-height">20</span></label>
+                    <input type="range" id="height" min="10" max="100" value="20"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Wall Density: <span
+                            id="val-density">30%</span></label>
+                    <input type="range" id="density" min="0" max="90" value="30"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </section>
+
+            <!-- Constraints -->
+            <section>
+                <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Constraints</h2>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="guaranteed_path" checked
+                            class="rounded text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-gray-700">Guaranteed Path</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="no_path" class="rounded text-red-600 focus:ring-red-500">
+                        <span class="text-sm text-gray-700">No Path Exists</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="unique_path" class="rounded text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-gray-700">Unique Path</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="allow_cycles" checked
+                            class="rounded text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-gray-700">Cycles Allowed</span>
+                    </label>
+
+                    <div class="pt-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dead-End Density</label>
+                        <input type="range" id="dead_end_density" min="0" max="100" value="50"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="mt-4 flex gap-2">
+                    <button id="btn-generate"
+                        class="flex-1 bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded text-sm font-medium transition">
+                        Generate New
+                    </button>
+                </div>
+            </section>
+
+            <!-- Algorithms -->
+            <section>
+                <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Algorithms</h2>
+                <select id="algorithm-select"
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 bg-white border">
+                    <option value="BFS">Breadth-First Search (BFS)</option>
+                    <option value="DFS">Depth-First Search (DFS)</option>
+                    <option value="Iterative Deepening DFS">Iterative Deepening DFS (IDDFS)</option>
+                    <option value="Bidirectional BFS">Bidirectional BFS</option>
+                    <option value="Greedy Best-First Search">Greedy Best-First Search</option>
+                    <option value="A*">A*</option>
+                </select>
+
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Speed: <span
+                            id="val-speed">Fast</span></label>
+                    <input type="range" id="speed" min="1" max="100" value="50"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                    <button id="btn-run"
+                        class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm font-medium transition">
+                        Run
+                    </button>
+                    <button id="btn-run-all"
+                        class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded text-sm font-medium transition">
+                        Run All (Table)
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results -->
+            <section id="results-panel" class="bg-gray-50 p-3 rounded border hidden">
+                <h3 class="text-sm font-bold text-gray-700">Last Run Metrics</h3>
+                <ul class="text-xs space-y-1 mt-2 text-gray-600">
+                    <li class="flex justify-between"><span>Success:</span> <span id="res-success"
+                            class="font-mono font-bold">-</span></li>
+                    <li class="flex justify-between"><span>Path Length:</span> <span id="res-length"
+                            class="font-mono">-</span></li>
+                    <li class="flex justify-between"><span>Nodes Expanded:</span> <span id="res-nodes"
+                            class="font-mono">-</span></li>
+                </ul>
+            </section>
+
+        </aside>
+
+        <!-- Visualization Area -->
+        <main class="flex-1 bg-gray-200 p-8 flex flex-col">
+
+            <div id="grid-container"
+                class="flex-1 bg-white shadow-lg rounded-lg border border-gray-300 relative overflow-hidden flex items-center justify-center p-4 transition-all duration-300">
+                <button id="btn-fullscreen"
+                    class="absolute top-2 right-2 bg-gray-600 text-white text-xs px-2 py-1 border border-black z-10 opacity-70 hover:opacity-100">Fullscreen</button>
+                <button id="btn-run-fs"
+                    class="hidden absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm font-bold shadow-lg border-2 border-white z-20 transition transform hover:scale-105">Run</button>
+                <canvas id="mazeCanvas" class="max-w-full max-h-full block"></canvas>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-4 flex justify-center space-x-6">
+                <div class="flex items-center space-x-2">
+                    <img src="Minecraft-Bricks.jpg" class="w-4 h-4 border border-gray-400"><span
+                        class="text-sm text-gray-600">Wall</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="Minecraft-Grass.png" class="w-4 h-4 border border-gray-400"><span
+                        class="text-sm text-gray-600">Empty</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="Minecraft-Ender-Pearl.png" class="w-4 h-4 border border-gray-400"><span
+                        class="text-sm text-gray-600">Exploring</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="Minecraft-Dirt-Path.webp" class="w-4 h-4 border border-gray-400"><span
+                        class="text-sm text-gray-600">Dead Path</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="Minecraft-Stone-Bricks.jpg" class="w-4 h-4 border border-gray-400"><span
+                        class="text-sm text-gray-600">Solution</span>
+                </div>
+            </div>
+
+            <!-- Algorithm Explanation -->
+            <div id="algo-info" class="mt-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h2 id="algo-title" class="text-lg font-bold text-gray-800 mb-2">BFS</h2>
+                <p id="algo-desc" class="text-sm text-gray-600 mb-4">Breadth-First Search explores all neighbor nodes at
+                    the present depth prior to moving on to the nodes at the next depth level.</p>
+                <button id="btn-show-code"
+                    class="w-full bg-gray-600 hover:bg-gray-500 text-white rounded p-2 text-xs font-bold border-2 border-black shadow mt-4">View
+                    Code</button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Run All Modal -->
+    <div id="modal-run-all" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-5xl">
+            <h2 class="text-xl font-bold mb-4">Algorithm Comparison</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3">Algorithm</th>
+                            <th class="px-6 py-3">Found?</th>
+                            <th class="px-6 py-3">Path Length</th>
+                            <th class="px-6 py-3">Nodes Expanded</th>
+                            <th class="px-6 py-3">Steps</th>
+                        </tr>
+                    </thead>
+                    <tbody id="run-all-table-body">
+                        <!-- Rows -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="btn-close-modal"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Modal -->
+    <div id="modal-code" class="fixed inset-0 bg-black bg-opacity-80 hidden flex items-center justify-center z-50">
+        <div class="bg-gray-800 border-4 border-white p-6 max-w-4xl w-full relative">
+            <h2 id="code-title" class="text-white text-lg font-bold mb-4">Algorithm Code</h2>
+            <pre
+                class="bg-black text-green-400 p-4 overflow-auto max-h-[70vh] border border-gray-600"><code id="code-content" class="text-sm font-mono whitespace-pre-wrap"></code></pre>
+            <button id="btn-close-code"
+                class="absolute top-2 right-2 text-white text-xl font-bold bg-red-600 px-3 py-1 border border-white hover:bg-red-700">X</button>
+        </div>
+    </div>
+
+    <script src="script.js?v=21"></script>
+</body>
+
+</html>

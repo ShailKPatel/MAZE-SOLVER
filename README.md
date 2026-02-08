@@ -6,7 +6,7 @@ The Maze Solver is a two-page web application built with **FastAPI** (Backend) a
 ## Features
 - **Interactive Solver**: Generate random mazes with constraints (Cycles, Density) and visualize algorithms (BFS, DFS, A*, etc.) step-by-step.
 - **Batch Analysis**: Run simulations on hundreds of mazes to compare algorithm performance (Success rate, Time, Nodes expanded).
-- **Algorithms**: BFS, DFS, IDDFS, Dijkstra, A*, Greedy Best-First.
+- **Algorithms**: BFS, DFS, Dijkstra, A*, Greedy Best-First.
 
 ## Implementation Details
 - **Backend**: `app/main.py` serves the API and static files. `app/algorithms.py` implements the solvers as generators. `app/maze_generator.py` handles maze creation.
@@ -21,7 +21,7 @@ The Maze Solver is a two-page web application built with **FastAPI** (Backend) a
 
 2. **Run the Server**:
    ```bash
-   uvicorn app.main:app --host 127.0.0.1 --port 8000
+   uvicorn app.main:app --reload
    ```
 
 3. **Access the App**:

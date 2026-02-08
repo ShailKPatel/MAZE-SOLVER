@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict
 from pydantic import BaseModel
 import time
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
 
 
 from .models import MazeConfig, MazeState, SolveRequest, StepUpdate
@@ -106,4 +109,9 @@ def health_check():
     return {"status": "ok"}
 
 # Mount static last so API takes precedence
-app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
+STATIC_DIR = BASE_DIR / "static"
+app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

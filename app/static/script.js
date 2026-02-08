@@ -23,24 +23,7 @@ const ALGO_INFO = {
         dfs(graph, next, visited)
     return visited`
     },
-    "Iterative Deepening DFS": {
-        title: "Iterative Deepening DFS (IDDFS)",
-        desc: "Combines depth-first search's space-efficiency and breadth-first search's completeness.",
-        code: `def iddfs(graph, start, goal):
-    depth = 0
-    while True:
-        result = dls(start, goal, depth)
-        if result == 'found': return result
-        depth += 1
 
-def dls(node, goal, depth):
-    if depth == 0 and node == goal: return 'found'
-    if depth > 0:
-        for neighbor in graph[node]:
-            if dls(neighbor, goal, depth-1) == 'found':
-                return 'found'
-    return None`
-    },
     "Bidirectional BFS": {
         title: "Bidirectional BFS",
         desc: "Runs two simultaneous breadth-first searches: one from the start node and one from the goal node.",
